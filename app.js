@@ -3,70 +3,97 @@ const app = express();
 const cors = require('cors');
 const random = require('random');
 
+const helper = require('./helper');
+
 app.use(cors());
 
 app.get('/', (req, res) => {
     
     let type = req.query.type || 'normal';
-    
-    // BODY TEMPERATURE    
-    let temperatures = {
-        normal: [95, 100],
-        abnormal: [100.4, 106],
-        prenormal: [10, 80]
-    };
-    let bodyTemperature = (Math.round(random.float(temperatures[type][0], temperatures[type][1]) * 100) / 100).toFixed(2);
 
-    // BLOOD PRESSURE
-    let pressures = {
-        normal: [35, 120],
-        abnormal: [120, 139],
-        prenormal: [140, 190]
-    };
-    let bloodPressure = random.int(pressures[type][0], pressures[type][1]);
+    let resultState = {};
 
-    // RESPIRATION
-    let breaths = {
-        normal: [8, 16],
-        abnormal: [26, 35],
-        prenormal: [1, 11]
-    };
-    let respiration = random.int(breaths[type][0], breaths[type][1]);
+    let diseases = ['diabetes', 'bronchiectasis', 'CHD', 'hypoxemia', 'asthma'];
 
-    // GULCOSE
-    let levels = {
-        normal: [20, 140],
-        abnormal: [142, 210],
-        prenormal: [140, 199]
-    };
-    let gulcose = random.int(levels[type][0], levels[type][1]);
+    let stateTypes = ['abnormal', 'prenormal'];
 
-    // HEART RATE
-    let rates = {
-        normal: [80, 140],
-        abnormal: [142, 220],
-        prenormal: [10, 79]
-    };
-    let heartRate = random.int(rates[type][0], rates[type][1]);
+    let badState = type === 'abnormal' || type === 'prenormal';
 
-    // OXYGEN
-    let oLevels = {
-        normal: [95, 100],
-        abnormal: [82, 92],
-        prenormal: [20, 95]
-    };
-    let oxygen = random.int(oLevels[type][0], oLevels[type][1]);
+    if (badState) {
+        let diseaseMapping = {
+            diabetes: ['gulcose'],        
+            bronchiectasis: ['respiration'],
+            CHD: ['bloodPressure', 'heartRate'],
+            hypoxemia: ['oxygen'],
+            asthma: ['oxygen', 'bloodPressure', 'respiration']
+        };
 
-    let mockData = {
-        bodyTemperature,
-        bloodPressure,
-        respiration,
-        gulcose,
-        heartRate,
-        oxygen       
-    }
+        let diseaseIdx = random.int(0, diseases.length-1);        
+        let currentDisease = diseases[diseaseIdx];
 
-    res.json(mockData);
+        let parameterMapping = {};
+
+        for (let parameter of diseaseMapping[currentDisease]) {
+            parameterMapping[parameter] = stateTypes[random.int(0, stateTypes.length-1)];
+        }        
+
+        // BODY TEMPERATURE    
+        let bodyTemperature = helper.handleBodyTemperature(parameterMapping['bodyTemperature']||'normal');
+
+        // BLOOD PRESSURE    
+        let bloodPressure = helper.handleBloodPressure(parameterMapping['bloodPressure']||'normal');
+
+        // RESPIRATION    
+        let respiration = helper.handleRespiration(parameterMapping['respiration']||'normal');
+
+        // GULCOSE
+        let gulcose = helper.handleGulcoseLevel(parameterMapping['gulcose']||'normal');
+
+        // HEART RATE
+        let heartRate = helper.handleHeartRate(parameterMapping['heartRate']||'normal');
+
+        // OXYGEN    
+        let oxygen = helper.handleOxygenLevel(parameterMapping['oxygen']||'normal');       
+
+        resultState = {
+            bodyTemperature,
+            bloodPressure,
+            respiration,
+            gulcose,
+            heartRate,
+            oxygen
+        };
+
+    } else {        
+        // BODY TEMPERATURE    
+        let bodyTemperature = helper.handleBodyTemperature(type);
+
+        // BLOOD PRESSURE    
+        let bloodPressure = helper.handleBloodPressure(type);
+
+        // RESPIRATION    
+        let respiration = helper.handleRespiration(type);
+
+        // GULCOSE
+        let gulcose = helper.handleGulcoseLevel(type);
+
+        // HEART RATE
+        let heartRate = helper.handleHeartRate(type);
+
+        // OXYGEN    
+        let oxygen = helper.handleOxygenLevel(type);        
+
+        resultState = {
+            bodyTemperature,
+            bloodPressure,
+            respiration,
+            gulcose,
+            heartRate,
+            oxygen
+        };
+    }       
+        
+    res.json(resultState);
 });
 
 app.listen(9000, () => console.log('Wearable API listening on port 9000'));
