@@ -37,6 +37,9 @@ app.get('/', (req, res) => {
             parameterMapping[parameter] = stateTypes[random.int(0, stateTypes.length-1)];
         }        
 
+        // STEPS
+        let steps = random.int(10, 500);
+
         // BODY TEMPERATURE    
         let bodyTemperature = helper.handleBodyTemperature(parameterMapping['bodyTemperature']||'normal');
 
@@ -56,6 +59,7 @@ app.get('/', (req, res) => {
         let oxygen = helper.handleOxygenLevel(parameterMapping['oxygen']||'normal');       
 
         resultState = {
+            steps,
             bodyTemperature,
             bloodPressure,
             respiration,
@@ -65,6 +69,10 @@ app.get('/', (req, res) => {
         };
 
     } else {        
+        
+        // STEPS
+        let steps = random.int(300, 1500);
+
         // BODY TEMPERATURE    
         let bodyTemperature = helper.handleBodyTemperature(type);
 
@@ -84,6 +92,7 @@ app.get('/', (req, res) => {
         let oxygen = helper.handleOxygenLevel(type);        
 
         resultState = {
+            steps,
             bodyTemperature,
             bloodPressure,
             respiration,
