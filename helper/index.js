@@ -12,7 +12,7 @@ const handleBodyTemperature = (type) => {
 
 const handleBloodPressure = (type) => {
     let pressures = {
-        normal: [35, 120],
+        normal: [90, 120],
         abnormal: [120, 139],
         prenormal: [140, 190]
     };
